@@ -57,4 +57,38 @@ async def ban_error(ctx, error):
     if isinstance(error, discord.ext.commands.MissingPermissions):
         await ctx.send(f'{ctx.message.author.mention} you don\'t have permission to do that!') 
 
-client.run('NzgxMzE0NDQ1OTU1NTYzNTYx.X771yA.9VhlBLMb4FRixio-RldBatwqMm0')
+@client.command()
+@commands.has_permissions(mute_members=True)
+async def mute(ctx, user: discord.Member = None):
+    if user: 
+        await ctx.send(f':no_entry: **{user.name}** has been successfully **muted**.')
+        await user.mute(reason='Muted by bot.')
+        print (f'Muted {user.name}.')
+    else:
+        await ctx.say("Please @ a user to ban.")
+
+@mute.error
+async def mute_error(ctx, error):
+    if isinstance(error, discord.ext.commands.BadArgument):
+        await ctx.send(f'{ctx.message.author.mention} please @ a valid user.')
+    if isinstance(error, discord.ext.commands.MissingPermissions):
+        await ctx.send(f'{ctx.message.author.mention} you don\'t have permission to do that!') 
+
+@client.command()
+@commands.has_permissions(deafen_members=True)
+async def deafen(ctx, user: discord.Member = None):
+    if user: 
+        await ctx.send(f':no_entry: **{user.name}** has been successfully **deafened**.')
+        await user.deafen(reason='Deafened by bot.')
+        print (f'Deafened {user.name}.')
+    else:
+        await ctx.say("Please @ a user to ban.")
+
+@deafen.error
+async def deafen_error(ctx, error):
+    if isinstance(error, discord.ext.commands.BadArgument):
+        await ctx.send(f'{ctx.message.author.mention} please @ a valid user.')
+    if isinstance(error, discord.ext.commands.MissingPermissions):
+        await ctx.send(f'{ctx.message.author.mention} you don\'t have permission to do that!') 
+
+client.run('NzgxMzE0NDQ1OTU1NTYzNTYx.X771yA.JhczD51TpG1u-NqWJQk38UxL1L8')

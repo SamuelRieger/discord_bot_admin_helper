@@ -5,11 +5,12 @@ import time
 import random
 from discord.ext import commands
 from discord.utils import get
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 from threading import Thread
 from time import sleep
+from typing import Awaitable
 
-load_dotenv()
+load_dotenv(find_dotenv())
 TOKEN = os.getenv('DISCORD_TOKEN')
 print(TOKEN)
 intents = discord.Intents.default()
@@ -22,120 +23,38 @@ stop = False
 async def on_ready():
     print('Bot Online')
 
-@client.event
+@client.command()
+@commands.has_permissions(kick_members=True)
 async def kick(ctx, user: discord.Member = None):
     if user:    
-        ctx.send(user)
-#     await bot.say(":boot: Cya, {}. Ya loser!".format(user.name))
-#     await bot.kick(user)
-#     print ("!kick on {}".format(user.name))
-# else:
-#     await bot.say("Please tag a user to kick")
-
-@client.command()
-async def annoy(ctx):
-    voice = get(client.voice_clients, guild=ctx.guild)
-    channel = ctx.message.author.voice
-    if channel:
-        global stop
-        stop = False
-        channel = ctx.message.author.voice.channel
-        channel_name = channel.name
-        await ctx.send('**Cover your ears unfortunate souls in `' + channel_name + '`. :skull:**')
-        if voice and voice.is_connected():
-            await voice.move_to(channel)
-        else:
-            voice = await channel.connect()
-
-        for i in range(20):
-            voice = get(client.voice_clients, guild=ctx.guild)
-            if stop == True:
-                if voice:
-                    await ctx.voice_client.disconnect()
-                stop = False
-                break
-            if voice:
-                await ctx.voice_client.disconnect()
-            else:
-                await channel.connect()
-            time.sleep(.200)
-        
-        voice = get(client.voice_clients, guild=ctx.guild)
-        if voice:
-            await ctx.voice_client.disconnect()
-        await ctx.send('**The pain is over. :innocent:**')
+        await ctx.send(f':boot: **{user.name}** has been successfully **kicked**.')
+        await user.kick(reason='Kicked by bot.')
+        print (f'Kicked {user.name}.')
     else:
-        await ctx.send('**You have to suffer with them if you want me to start. :smiling_imp:**')
+        await ctx.say("Please @ a user to kick.")
+
+@kick.error
+async def kick_error(ctx, error):
+    if isinstance(error, discord.ext.commands.BadArgument):
+        await ctx.send(f'{ctx.message.author.mention} please @ a valid user.')
+    if isinstance(error, discord.ext.commands.MissingPermissions):
+        await ctx.send(f'{ctx.message.author.mention} you don\'t have permission to do that!') 
 
 @client.command()
-async def stop(ctx):
-    global stop
-    stop = True
-    member = ctx.message.author
-    role = discord.utils.get(ctx.message.guild.roles, name = 'Soldat')
-    await member.add_roles(role)
-
-@client.command()
-async def jumble(ctx):
-    voice = get(client.voice_clients, guild=ctx.guild)
-    channel = ctx.message.author.voice
-    if channel:
-        await ctx.send('**Let the fun begin. :game_die:**')
-        channel = ctx.message.author.voice.channel
-        members = channel.voice_states.keys()
-        channels = ctx.guild.voice_channels
-        for member in members:
-            await client.wait_until_ready()
-            cur_channel = channels[random.randint(0, len(channels)-1)]
-            cur_member = ctx.guild.get_member(member)
-            print(cur_channel)
-            print(cur_member.name)
-            await cur_member.move_to(cur_channel)
+@commands.has_permissions(ban_members=True)
+async def ban(ctx, user: discord.Member = None):
+    if user: 
+        await ctx.send(f':no_entry: **{user.name}** has been successfully **banned**.')
+        await user.ban(reason='Banned by bot.')
+        print (f'Banned {user.name}.')
     else:
-        await ctx.send('**You have to suffer with them if you want me to start. :smiling_imp:**')
+        await ctx.say("Please @ a user to ban.")
 
-@client.command()
-async def degrade(ctx):
-    voice = get(client.voice_clients, guild=ctx.guild)
-    channel = ctx.message.author.voice
-    if channel:
-        channel = ctx.message.author.voice.channel
-        channel_name = channel.name
-        await ctx.send('**`' + channel_name + '`  is now a ham radio. :meat_on_bone:**')
-        await channel.edit(bitrate = 8000)
-    else:
-        await ctx.send('**You have to suffer with them if you want me to start. :smiling_imp:**')
+@ban.error
+async def ban_error(ctx, error):
+    if isinstance(error, discord.ext.commands.BadArgument):
+        await ctx.send(f'{ctx.message.author.mention} please @ a valid user.')
+    if isinstance(error, discord.ext.commands.MissingPermissions):
+        await ctx.send(f'{ctx.message.author.mention} you don\'t have permission to do that!') 
 
-@client.command()
-async def repair(ctx):
-    voice = get(client.voice_clients, guild=ctx.guild)
-    channel = ctx.message.author.voice
-    if channel:
-        channel = ctx.message.author.voice.channel
-        channel_name = channel.name
-        channel_bitrate = ctx.guild.bitrate_limit
-        await ctx.send('**`' + channel_name + '` has been repaired. :tools:**')
-        await channel.edit(bitrate = channel_bitrate)
-    else:
-        await ctx.send('**Please join a channel in order to repair it.**')
-
-@client.event
-async def on_member_join(member):
-    if member.guild.name == 'The Meme Surpreme':
-        role = discord.utils.get(member.guild.roles, name = 'Soldat')
-        await member.add_roles(role)
-
-
-@client.command()
-async def commands(ctx):
-    user = ctx.message.author.mention
-    await ctx.send(user + ''' My commands are...
-        :skull:   **,annoy** - Makes people want to die.
-        :octagonal_sign:   **,stop** - Stops making people want to die.
-        :game_die:   **,jumble** - You won't have any friends after you type this.
-        :meat_on_bone:   **,degrade** - Turns the voice chat into a ham radio.
-        :tools:   **,repair** - Repairs your sins.
-    ''')
-
-
-client.run(TOKEN)
+client.run('NzgxMzE0NDQ1OTU1NTYzNTYx.X771yA.9VhlBLMb4FRixio-RldBatwqMm0')
